@@ -1,15 +1,13 @@
 package app
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/RadishXZ/fastgo/cmd/fg-apiserver/app/options"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var configFile string
+
 
 func NewFastGOCommand() *cobra.Command {
 	opts := options.NewServerOptions()
@@ -24,19 +22,7 @@ func NewFastGOCommand() *cobra.Command {
 		SilenceUsage: true,	// 设置true的话，出错时不打印帮助信息，直接输出错误信息
 		// 指定调用cmd.Excute()时执行Run函数
 		RunE: func (cmd *cobra.Command, args []string) error  {
-			// 将viper中的配置解析到opts变量中
-			if err := viper.Unmarshal(opts); err != nil {
-				return err
-			}
-			// 对命令进行校验
-			if err := opts.Validate(); err != nil {
-				return err
-			}
-			fmt.Printf("Read MySQl host from Viper: %s\n\n", viper.GetString("mysql.host"))
-
-			jsonData, _ :=json.MarshalIndent(opts, "", " ")
-			fmt.Println(string(jsonData))
-			return nil	
+			return run(opts)
 		},
 		// 设置命令运行的参数检查，不需要指定命令行参数
 		Args: cobra.NoArgs,
@@ -47,4 +33,25 @@ func NewFastGOCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&configFile, "config", "c", filePath(), "Path to the fg-apiserver configuration file.")
 
 	return cmd
+}
+
+func run (opts *options.ServerOptions) error {
+	// viper.Unmarshal 会把配置文件的值自动填充到opts结构体中
+	if err := viper.Unmarshal(opts); err != nil {
+		return err
+	}
+	if err := opts.Validate(); err != nil {
+		return err
+	}
+	
+	cfg, err := opts.Config()
+	if err != nil {
+		return err
+	}
+	server, err := cfg.NewServer()
+	if err != nil {
+		return err
+	}
+
+	return server.Run()
 }
