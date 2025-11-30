@@ -2,8 +2,6 @@ module github.com/RadishXZ/fastgo
 
 go 1.24.0
 
-require github.com/onexstack/fastgo v1.0.0
-
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/bytedance/sonic v1.12.5 // indirect

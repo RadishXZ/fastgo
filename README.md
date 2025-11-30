@@ -4,7 +4,14 @@
 ### 总体流程顺序
 
     cmd/fg-apiserver/main.go --> 
-    cmd/fg-apiserver/app.NewFastGOCommand() --> cobra执行 --> onInitialize() (viper读取配置) --> run(opts) --> viper.Unmarshal(opts) --> opts.Validate() --> opts.Config() --> cfg.NewServer() --> server.Run()
+    cmd/fg-apiserver/app.NewFastGOCommand() --> 
+    cobra执行 --> onInitialize() (viper读取配置) --> 
+    run(opts) --> 
+    viper.Unmarshal(opts) --> 
+    opts.Validate() --> 
+    opts.Config() --> 
+    cfg.NewServer() --> 
+    Server.Run()
 
 
 

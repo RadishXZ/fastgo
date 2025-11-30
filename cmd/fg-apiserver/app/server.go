@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/RadishXZ/fastgo/cmd/fg-apiserver/app/options"
+	"github.com/RadishXZ/fastgo/pkg/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -29,12 +30,15 @@ func NewFastGOCommand() *cobra.Command {
 	}
 	cobra.OnInitialize(onInitialize)
 
-	// 为命令行程序添加 --config/c 命令行, 用于检查yaml文件的config设置
+	// 为命令行程序添加 --config/c 命令, 用于检查yaml文件的config设置
 	cmd.PersistentFlags().StringVarP(&configFile, "config", "c", filePath(), "Path to the fg-apiserver configuration file.")
 
+	// 为命令行程序添加 --version 命令
+	version.AddFlags(cmd.PersistentFlags())
 	return cmd
 }
 
+// run 是主运行逻辑, 负责初始化日志、解析配置、校验选项并启动服务器
 func run (opts *options.ServerOptions) error {
 	// viper.Unmarshal 会把配置文件的值自动填充到opts结构体中
 	if err := viper.Unmarshal(opts); err != nil {
@@ -52,6 +56,9 @@ func run (opts *options.ServerOptions) error {
 	if err != nil {
 		return err
 	}
+
+	// 如果传入 --version 则打印版本信息并退出
+	version.PrintAndExitIfRequested()
 
 	return server.Run()
 }
