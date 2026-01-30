@@ -1,7 +1,22 @@
+# mysql 相关配置信息
 mysql:
+  # 数据库地址和端口
   addr: 127.0.0.1:3306
+  # 数据库登录账户
   username: fastgo
+  # 数据库登录账户密码
   password: fastgo1234
+  # 数据库所使用的库名
   database: fastgo
+  # mysql 最大空闲连接数, 默认100
   max-idle-connections: 100
+  # mysql 最大打开连接数, 默认100
+  mac-open-connections: 100
+  # 空闲连接最大存货时间, 默认10秒
   max-connection-life-time: 10s
+
+# 日志 格式、输出配置等
+log:
+  format: text
+  level: info
+  output: stdout

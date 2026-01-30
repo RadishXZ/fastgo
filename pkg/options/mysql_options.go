@@ -25,7 +25,7 @@ type MySQLOptions struct {
 // 用于默认创建一个默认值, 定义是一个返回结构体指针的函数, 主要都是些默认值为主
 func NewMySQLOptions() *MySQLOptions {
 	return &MySQLOptions{
-		Addr: "127.0.0.1:3006",
+		Addr: "127.0.0.1:3306",
 		Username: "onex",
 		Password: "onex(#)666",
 		Database: "onex",

@@ -26,7 +26,7 @@ type Info struct {
 
 }
 
-//	返回版本号, 最简单展示
+//	返回版本号, 最简单展示构建信息
 func (info Info) String() string {
 	return info.GitVersion
 }
@@ -38,11 +38,15 @@ func (info Info) ToJSON() string {
 	return string(s)
 }
 
-// 用表格形式打印出来
+// 用表格形式打印出来, 展示格式化的版本信息
 func (info Info) Text() string {
+	// 创建一个新的表格 (空表)
 	table := uitable.New()
+	// 把指定列设置为向右对齐, 0是第一列, 也可以传入多个参数 (0, 2) 表示第1和3列右对齐
 	table.RightAlign(0)
+	// 限制单列最大字符宽度, 多出来的会自动把内容拆成多行自适应
 	table.MaxColWidth = 80
+	// 设置烈玉列之间用作分隔的字符串, " "表示空格， 也可以指定其他的作为分隔符, 例如 " | " 
 	table.Separator = " "
 	table.AddRow("gitVersion:", info.GitVersion)
 	table.AddRow("gitCommit:", info.GitCommit)
@@ -54,7 +58,7 @@ func (info Info) Text() string {
 	return table.String()
 }
 
-// 收集所有信息, 返回一个Info对象
+// 收集所有信息, 返回详细的代码库版本信息
 func Get() Info {
 	return Info {
 		GitVersion: gitVersion,

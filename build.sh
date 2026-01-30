@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 获取脚本所在目录作为根目录
+# 获取脚本所在目录作为根目录, dirname取脚本目录
 PROJ_ROOT_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 # 定义编译后的输出目录
@@ -10,6 +10,7 @@ OUTPUT_DIR=${PROJ_ROOT_DIR}/_output
 VERSION_PACKAGE=github.com/RadishXZ/fastgo/pkg/version
 
 # 确定VERSION值, 如果环境变量中没有设置VERSION, 则使用git标签作为版本号
+# -z 测试字符串是否为空
 if [[ -z "${VERSION}" ]];then
     VERSION=$(git describe --tags --always --match='v*')
 fi
@@ -18,9 +19,10 @@ fi
 # 默认状态设为"dirty" (有提交更改)
 GIT_TREE_STATE="dirty"
 
-# 使用git status检查是否有未提交的更改
+# 使用git status --porcelain检查是否有未提交的更改
+# 用命令替换保存到变量 is_clean
 is_clean=$(git status --porcelain 2>/dev/null)
-# 如果is_clean为空, 说明没有未提交的更改, 状态为"clean"
+# 如果is_clean为空, 说明没有未提交的更改, 状态为"clean", 否则保留默认值dirty
 if [[ -z ${is_clean} ]];then
     GIT_TREE_STATE="clean"
 fi
