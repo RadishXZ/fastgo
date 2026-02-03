@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	mw "github.com/RadishXZ/fastgo/internal/pkg/middleware"
 	genericoptions "github.com/RadishXZ/fastgo/pkg/options"
 	"github.com/gin-gonic/gin"
 )
@@ -26,6 +27,10 @@ func (cfg *Config) NewServer() (*Server, error) {
 
 	// 创建一个Gin引擎
 	engine := gin.New()
+
+	// gin.Recovery() 中间件, 用来捕获 panic 并恢复
+	mws := []gin.HandlerFunc{gin.Recovery(), mw.NoCache, mw.Cors, mw.RequestID()}
+	engine.Use(mws...)
 	
 	// 注册404, 代码通过 JSON 返回 404
 	engine.NoRoute(func (c *gin.Context)  {
