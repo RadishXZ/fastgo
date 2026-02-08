@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/RadishXZ/fastgo/internal/pkg/core"
+	"github.com/RadishXZ/fastgo/internal/pkg/errorsx"
 	mw "github.com/RadishXZ/fastgo/internal/pkg/middleware"
 	genericoptions "github.com/RadishXZ/fastgo/pkg/options"
 	"github.com/gin-gonic/gin"
@@ -40,12 +42,12 @@ func (cfg *Config) NewServer() (*Server, error) {
 	// 注册404, 代码通过 JSON 返回 404
 	engine.NoRoute(func (c *gin.Context)  {
 		// 调用
-		c.JSON(http.StatusNotFound, gin.H{"code": "PageNotFound", "message": "Page not found."})
+		core.WriteResponse(c, errorsx.ErrNotFound.WithMessage("Page Not found"), nil)
 	})
 
 	// 注册 /healthz Handler处理器, 检查注册健康检查接口, 检查我们任何觉得会影响服务器健康状态的项目
 	engine.GET("/healthz", func (c *gin.Context)  {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		core.WriteResponse(c, nil, map[string]string{"status": "ok"})
 	})
 
 	// 构造标准库的http.Server 把Gin引擎作为请求处理器,并把监听地址设为cfg.Addr
