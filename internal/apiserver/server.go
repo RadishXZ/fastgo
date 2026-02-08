@@ -1,9 +1,14 @@
 package apiserver
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	mw "github.com/RadishXZ/fastgo/internal/pkg/middleware"
 	genericoptions "github.com/RadishXZ/fastgo/pkg/options"
@@ -54,13 +59,37 @@ func (cfg *Config) NewServer() (*Server, error) {
 func (s *Server) Run() error {
 	// 运行 HTTP 服务器
 	// 打印一条日志, 用来提示 HTTP 服务已经起来, 调用slog记录一条info级别的日志信息, 内容格式以信息+地址呈现
-	slog.Info("Read MySQL host from config", "mysql.addr", s.cfg.MySQLOptions.Addr)
-	// fmt.Printf("Read MySQL host from config: %s\n", s.cfg.MySQLOptions.Addr)  # 日志功能加入, 已被替代
+	slog.Info("Start to listening the incoming requests on http address", "addr", s.cfg.Addr)
+	go func ()  {
+		if err := s.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Error(err.Error())
+			os.Exit(1)
+		}
+	}()
+
+	// 设置一个监听信号, 也就是在 channel 中设置一个 Signal通知程序关闭信号
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	// 让程序阻塞等待, 等待从 quit channel  中接收到信号
+	// quit 收到 SIGTERM 信号后, 程序会解除阻塞状态, 并调用 *http.Server类型实例的 Shutdown方法优雅关停服务器
+	<-quit
+
+	slog.Info("Shutting down server ...")
+
+	// 优雅关闭服务
+	// 通过context.WithTimeout 设定了10秒, 意思是超过10秒就会强制关闭服务
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	
-	// 调用s.srv.ListenAndServe方法启动服务器, 当该方法返回错误时, 报错退出
-	if err := s.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	// 先关闭依赖的服务, 在关闭被依赖的服务
+	// 10秒内优雅关闭服务 (将未处理完的请求处理完再关闭), 超过 10 秒就超时退出
+	if err := s.srv.Shutdown(ctx); err != nil {
+		slog.Error("Insecure Server forced to shutdown", "err", err)
 		return err
 	}
+
+	slog.Info("Server exited")
 
 	return nil
 }
